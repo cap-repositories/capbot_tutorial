@@ -1,6 +1,4 @@
 # capbot_tutorial
-___
-
 
 ## Configurar el Workspace 
 
@@ -67,4 +65,40 @@ $ ./devel/lib/capbot_description/parser ./src/capbot_description/urdf/capbot.urd
 ```
 Si el analisis fue correcto se presentara un mensaje "Successfully parsed urdf file", de lo contrario se mostrara el error detectado.
 
+___
+
+##Crear un paquete de Gazebo para ROS
+
+primero aseurarse de tener instaladas las dependencias para controlar gazebo desde ros
+```
+$ sudo apt-get install ros-kinetic-gazebo-ros-pkgs ros-kinetic-gazebo-ros-control
+```
+Crear el nuevo paquete
+```
+$ cd ~/capbot_ws/src
+$ catkin_create_pkg capbot_gazebo gazebo_ros roscpp gazebo_msgs gazebo_plugins gazebo_ros_control
+```
+Crear las carpetas estandar para el almacenamiento de los archivos de la simulacion
+
+```
+$ makdir launch
+$ mkdir materials
+$ mkdir models
+$ mkdir worlds
+$ mkdir src
+```
+
+Crear el archivo **capbotl.launch** en la carpeta launch con el siguiente contenido:
+```
+<launch>
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="$(find MYROBOT_gazebo)/worlds/capbot.world"/>
+  </include>
+  <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-file $(find capbot_description)/urdf/capbot.urdf -urdf -z 1 -model capbot" />
+</launch>
+```
+Este archivo permite lanzar la simulacion en gazebo cargando automaticamente el entorno y el robot.
+se puede notar que el argumento "world_name" hace referencia a un archivo **capbot.world**que no a sido creado y el nodo "spawn_urdf" hace referencia al archivo **capbot.urdf** creado en el punto anterior.
+
+Para crear el entorno tipo ***world*** para la simulacion, se debe abrir gazebo y agregar los elementos que correspondan, finalizar guardando el modelo como capbot.world en la carpeta correspondiente.
 
