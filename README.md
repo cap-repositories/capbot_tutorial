@@ -23,7 +23,7 @@ Crear una carpeta /urdf para almacenar el archivo urdf del modelo del robot
 ```
 $ mkdir urdf
 ```
-Esto es una formato estandar para guardar el modelo del robot en ros.
+Esto es una formato estandar para guardar el modelo del robot en ros. en esrta carpeta se debe poner el archivo capbot.urdf
 
 Se pueden crear otras carpetas para ir almacenando ordenadamente otros componentes del modelo como archivos de mallas y modelos cad
 ```
@@ -31,23 +31,40 @@ makdir meshes
 mkdir materials
 mkdir cad
 ```
+Cree una carpeta **src/** y en un editor de texto cree un archivo llamado **parser.cpp** y guardelo en la nueva carpeta **src/**
 
-
-
-
-
-Cada aplicaion de ROS debe ejecutarse en su propio workspace para evitar conflictos entre versiones u otros proyectos.
-Cuando abrimos el proyecto de ROS en el ROS Development Studio, un workspace de catkin esta preconfigurado y solo debemos verificar que este bien establecido.
-En la terminal escribimos:
 ```
-$ ls
+#include <urdf/model.h>
+#include "ros/ros.h"
+
+int main(int argc, char** argv){
+  ros::init(argc, argv, "my_parser");
+  if (argc != 2){
+    ROS_ERROR("Need a urdf file as argument");
+    return -1;
+  }
+  std::string urdf_file = argv[1];
+
+  urdf::Model model;
+  if (!model.initFile(urdf_file)){
+    ROS_ERROR("Failed to parse urdf file");
+    return -1;
+  }
+  ROS_INFO("Successfully parsed urdf file");
+  return 0;
+}
 ```
-Aparece la lista de carpetas y archivos, debe aparecer una carpera catkin_ws, entramos a ella con:
+Para ejecutar el codigo, primero agregue las siguientes líneas al archivo CMakeList.txt:
 ```
-$ cd catkin_ws
-$ ls
+ add_executable(parser src/parser.cpp)
+ target_link_libraries(parser ${catkin_LIBRARIES})
+ ```
+
+construya el paquete y ejecútelo.
 ```
-aparece la lista de carpetas que deben incluir:
-* build
-* devel
-* src
+$ catkin_make
+$ ./devel/lib/capbot_description/parser ./src/capbot_description/urdf/capbot.urdf
+```
+Si el analisis fue correcto se presentara un mensaje "Successfully parsed urdf file", de lo contrario se mostrara el error detectado.
+
+
