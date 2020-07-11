@@ -67,7 +67,7 @@ Si el analisis fue correcto se presentara un mensaje "Successfully parsed urdf f
 
 ___
 
-##Crear un paquete de Gazebo para ROS
+## Crear un paquete de Gazebo para ROS
 
 primero aseurarse de tener instaladas las dependencias para controlar gazebo desde ros
 ```
@@ -88,11 +88,11 @@ $ mkdir worlds
 $ mkdir src
 ```
 
-Crear el archivo **capbotl.launch** en la carpeta launch con el siguiente contenido:
+Crear el archivo **capbot.launch** en la carpeta launch con el siguiente contenido:
 ```
 <launch>
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
-    <arg name="world_name" value="$(find MYROBOT_gazebo)/worlds/capbot.world"/>
+    <arg name="world_name" value="$(find capbot_gazebo)/worlds/capbot.world"/>
   </include>
   <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-file $(find capbot_description)/urdf/capbot.urdf -urdf -z 1 -model capbot" />
 </launch>
@@ -101,4 +101,17 @@ Este archivo permite lanzar la simulacion en gazebo cargando automaticamente el 
 se puede notar que el argumento "world_name" hace referencia a un archivo **capbot.world**que no a sido creado y el nodo "spawn_urdf" hace referencia al archivo **capbot.urdf** creado en el punto anterior.
 
 Para crear el entorno tipo ***world*** para la simulacion, se debe abrir gazebo y agregar los elementos que correspondan, finalizar guardando el modelo como capbot.world en la carpeta correspondiente.
+
+Para iniciar la simulacion desde el archivo capbot.launch se utiliza la funcion roslaunch asi:
+```
+roslaunch capbot_gazebo capbot.launch
+```
+Este comando abrira gazebo cargando el entorno y el robot pero no permitira mover el robot desde ROS.
+
+## Configurar el robot para ser simulado en gazebo
+El modelo del robot que es interpretado por gazebo es el archivo capbot.urdf, en este archivo se debe incluir toda la informacion y funciones (que llamaremos plugins) que permiten a gazebo interactuar con el robot para producir el movimiento o agregar sensores (simulados).
+
+*colores
+*diffretential drive
+*sensor
 
