@@ -23,7 +23,7 @@ sudo apt update
 ```
 sudo apt install ros-noetic-desktop-full
 ```
-Finalmente, se debe correr el archivo setup.bash de ROS cada que se abre una terminal. Para que esto se haga de forma automatica cada que se abra una nueva terminal, se deben correr los siguientes comandos en la terminal:
+Para trabajar con ROS, se debe correr el archivo setup.bash de ROS cada que se abre una terminal. Para que esto se haga de forma automatica cada que se abra una nueva terminal, se deben correr los siguientes comandos en la terminal:
 * ``` echo "source /opt/ros/noetic/setup.bash" >> ~/.bashrc ```
 * ``` source ~/.bashrc ```
 
@@ -32,3 +32,8 @@ Pruebe la instalacion iniciando al ambiente de simualacion **Gazebo**, en la ter
 echo "export SVGA_VGPU10=0" >> ~/.profile
 ```
 
+Para facilitar el trabajo con ROS en multiples terminales, se recomienda instalar el emulador de terminal "terminator":
+```
+sudo apt-get update
+sudo apt-get install terminator
+```
