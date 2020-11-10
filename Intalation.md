@@ -10,13 +10,25 @@ Abra una nueva terminal y copie los siguientes comandos en orden.
 ```
 sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
 ```
+
 ```
 sudo apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654
-```0
+```
+
 Los siguientes comando puede tardes bastante
 ```
 sudo apt update
 ```
+
 ```
 sudo apt install ros-noetic-desktop-full
 ```
+Finalmente, se debe correr el archivo setup.bash de ROS cada que se abre una terminal. Para que esto se haga de forma automatica cada que se abra una nueva terminal, se deben correr los siguientes comandos en la terminal:
+* ``` echo "source /opt/ros/noetic/setup.bash" >> ~/.bashrc ```
+* ``` source ~/.bashrc ```
+
+Pruebe la instalacion iniciando al ambiente de simualacion **Gazebo**, en la terminar escriba ***gazebo*** y presiones enter. Si la aplicacion abre y se mantiene, todo quedo bien. Si al aplicacion se cierra y muestra un error en consola, ejecute el siguiente comando:
+```
+echo "export SVGA_VGPU10=0" >> ~/.profile
+```
+
