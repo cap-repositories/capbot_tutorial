@@ -85,16 +85,16 @@ ___
 
 ## Crear un paquete de Gazebo para ROS
 
-primero aseurarse de tener instaladas las dependencias para controlar gazebo desde ros
+primero nos aseguramos de tener instaladas las dependencias para controlar gazebo desde ros
 ```
-$ sudo apt-get install ros-kinetic-gazebo-ros-pkgs ros-kinetic-gazebo-ros-control
+$ sudo apt-get install ros-noetic-gazebo-ros-pkgs ros-kinetic-gazebo-ros-control
 ```
-Crear el nuevo paquete
+Crear el nuevo paquete con las dependencias necesarias
 ```
 $ cd ~/capbot_ws/src
 $ catkin_create_pkg capbot_gazebo gazebo_ros roscpp gazebo_msgs gazebo_plugins gazebo_ros_control
 ```
-Crear las carpetas estandar para el almacenamiento de los archivos de la simulacion
+Crear las carpetas estandar para el almacenamiento de los archivos de la simulacion.
 
 ```
 $ makdir launch
@@ -114,15 +114,17 @@ Crear el archivo **capbot.launch** en la carpeta launch con el siguiente conteni
 </launch>
 ```
 Este archivo permite lanzar la simulacion en gazebo cargando automaticamente el entorno y el robot.
-se puede notar que el argumento "world_name" hace referencia a un archivo **capbot.world**que no a sido creado y el nodo "spawn_urdf" hace referencia al archivo **capbot.urdf** creado en el punto anterior.
+se puede notar que el argumento "world_name" hace referencia a un archivo **capbot.world** que no a sido creado y el nodo "spawn_urdf" hace referencia al archivo **capbot.urdf** creado en el punto anterior.
 
-Para crear el entorno tipo ***world*** para la simulacion, se debe abrir gazebo y agregar los elementos que correspondan, finalizar guardando el modelo como capbot.world en la carpeta correspondiente.
+Para crear el entorno tipo ***world*** para la simulacion, se debe abrir gazebo y agregar los elementos que correspondan, finalizar guardando el modelo como capbot.world en la carpeta correspondiente. para abrir gazebo solo se debe escribir ***gazebo*** en la consola y explorar las funciones de agregar objetos y crear geometrias para poblar la simulacion.
 
 Para iniciar la simulacion desde el archivo capbot.launch se utiliza la funcion roslaunch asi:
 ```
-roslaunch capbot_gazebo capbot.launch
+$ source devel/setup.bash
+$ roslaunch capbot_gazebo capbot.launch
 ```
-Este comando abrirá gazebo cargando el entorno y el robot pero no permitira mover el robot desde ROS.
+nota: el comando source devel/setup.bash debe usarse cada que se crean nuevos paquetes justo despues e usar catkin make para que los nuevos paquetes puedan usarse desde la terminal.
+Este comando abrirá gazebo cargando el entorno y el robot pero no permitira mover el robot desde ROS (todavia), de echo, no es nada diferente al archivo ***gazebo.launch*** que usamos anteriormente, pero iremos agregando mas funciones.
 
 ## Configurar el robot para ser simulado en gazebo
 El modelo del robot que es interpretado por gazebo es el archivo capbot.urdf, en este archivo se debe incluir toda la informacion y funciones (que llamaremos plugins) que permiten a gazebo interactuar con el robot para producir el movimiento o agregar sensores (simulados).
