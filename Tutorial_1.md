@@ -3,8 +3,9 @@
 ## Configurar el Workspace 
 
 ```
-$ mkdir capbot_ws/src
+$ mkdir capbot_ws
 $ cd capbot_ws
+$ mkdir src
 $ catkin_make
 $ . ~/catkin_ws/devel/setup.bash
 ```
@@ -12,24 +13,13 @@ $ . ~/catkin_ws/devel/setup.bash
 
 Crear paquete con dependencia de urdf (para visualizar el modelo desde ros)
 ```
-$ cd ~/catkin_ws/src
+$ cd src
 $ catkin_create_pkg capbot_description urdf
 $ cd capbot_description
 ```
-Crear una carpeta /urdf para almacenar el archivo urdf del modelo del robot
+Dentro de la carpeta ***capbot_description*** que se acaba de crear, se deben poner las carpetas ***urdf*** y ***meshes*** que se pueden descargar[aqui](https://javerianacaliedu-my.sharepoint.com/:f:/g/personal/juandavid_contreras_javerianacali_edu_co/EmJIYJQKr6xPlEttRKYFlH4ByxAgbMaU-C1fkgPEM6wkOA?e=o5mWnd). En la carpeta urdf esta el archivo capbot.urdf con la descripcion de la conematica y dinamica del robot. En la carpeta meshes estan los archivos STL de los modelos 3D que componen el robot, estos archivos se ensamblan segun la cinematica descrita en  capbot.urdf.
 
-```
-$ mkdir urdf
-```
-Esto es una formato estandar para guardar el modelo del robot en ros. en esrta carpeta se debe poner el archivo capbot.urdf
-
-Se pueden crear otras carpetas para ir almacenando ordenadamente otros componentes del modelo como archivos de mallas y modelos cad
-```
-makdir meshes
-mkdir materials
-mkdir cad
-```
-Cree una carpeta **src/** y en un editor de texto cree un archivo llamado **parser.cpp** y guardelo en la nueva carpeta **src/**
+A continuacion se recomiando hacer el analisis del modelo urdf utilizando un ***parser***. Para esto cree una carpeta **src/** dentro de capbot_description y en un editor de texto cree un archivo llamado **parser.cpp** y guardelo en la nueva carpeta **src/**. El contenido de **parser.cpp** es el siguiente:
 
 ```
 #include <urdf/model.h>
@@ -52,19 +42,45 @@ int main(int argc, char** argv){
   return 0;
 }
 ```
-Para ejecutar el codigo, primero agregue las siguientes líneas al archivo CMakeList.txt:
+Para ejecutar el codigo, primero agregue las siguientes líneas al archivo CMakeList.txt de la carpeta capbot_description:
 ```
  add_executable(parser src/parser.cpp)
  target_link_libraries(parser ${catkin_LIBRARIES})
  ```
 
-construya el paquete y ejecútelo.
+lo siguiente sera Construir (build) el paquete y ejecútelo, para esto en la terminal vaya a la carpeta capbot_ws usando cd o cd .. y pegue los siguientes comandos.
 ```
 $ catkin_make
 $ ./devel/lib/capbot_description/parser ./src/capbot_description/urdf/capbot.urdf
 ```
 Si el analisis fue correcto se presentara un mensaje "Successfully parsed urdf file", de lo contrario se mostrara el error detectado.
 
+Para visualizar el modelo URDF, podemos usar gazebo o rviz, lo recomendable es crear un archivo de lanzamiento "launch file".
+
+Para crear nuestro primer launch file debemos crear una carpeta llamada launch en capbot_description y crear un archivos llamado gazebo.launch con el siguiente contenido:
+```
+<launch>
+  <include
+    file="$(find gazebo_ros)/launch/empty_world.launch" />
+  <node
+    name="spawn_model"
+    pkg="gazebo_ros"
+    type="spawn_model"
+    args="-file $(find capbot_description)/urdf/capbot.urdf -urdf -model capbot"
+    output="screen" />
+</launch>
+```
+Recuerda guardar el documento.
+
+los launch files son una herramienta muy util para iniciar varios nodos o funciones de ROS de forma integrada. en este archivo estamos abriendo un archivos de gazebo y entregando como argumento nuestro modelo capbot.urdf.
+
+Para ejecutar el launch file debemos ejecutar los siguientes comandos.
+```
+$ cd ~/capbot_ws
+$ source devel/setup.bash
+$ roslaunch capbot_description gazebo.launch
+```
+Debera abrir el simulador Gazebo con el modelo del robot. Todavia no podemos mover el robot debido a que no tenemos ningun nodo que controle la velocidad de las ruedas.
 ___
 
 ## Crear un paquete de Gazebo para ROS
@@ -106,7 +122,7 @@ Para iniciar la simulacion desde el archivo capbot.launch se utiliza la funcion 
 ```
 roslaunch capbot_gazebo capbot.launch
 ```
-Este comando abrira gazebo cargando el entorno y el robot pero no permitira mover el robot desde ROS.
+Este comando abrirá gazebo cargando el entorno y el robot pero no permitira mover el robot desde ROS.
 
 ## Configurar el robot para ser simulado en gazebo
 El modelo del robot que es interpretado por gazebo es el archivo capbot.urdf, en este archivo se debe incluir toda la informacion y funciones (que llamaremos plugins) que permiten a gazebo interactuar con el robot para producir el movimiento o agregar sensores (simulados).
