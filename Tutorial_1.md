@@ -87,7 +87,7 @@ ___
 
 primero nos aseguramos de tener instaladas las dependencias para controlar gazebo desde ros
 ```
-$ sudo apt-get install ros-noetic-gazebo-ros-pkgs ros-kinetic-gazebo-ros-control
+$ sudo apt-get install ros-noetic-gazebo-ros-pkgs ros-noetic-gazebo-ros-control
 ```
 Crear el nuevo paquete con las dependencias necesarias
 ```
