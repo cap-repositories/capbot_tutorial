@@ -82,7 +82,7 @@ $ roscore
 
 ```
 
-Esta terminal no se debe cerrar por lo que debe abrir otras terminales para ejecutar otros comandos. **Cuando se ejecuta gazebo desde el launch file, roscore corre internamente, asi que no es necesario llamarlo de nuevo**.
+Esta terminal no se debe cerrar por lo que debe abrir otras terminales para ejecutar otros comandos. **Cuando se ejecuta gazebo desde el launch file, roscore corre internamente, asi que no es necesario llamarlo de nuevo mientras gazebo este activo**.
 
 ### Rosnode
 
@@ -91,34 +91,29 @@ _Rosnode_ es una función de ROS que permite obtener información de los nodos q
 Veamos que puede hacer rosnode, ejecuta en una nueva terminal:
 
 ```
-
 rosnode list
-
 ```
 
-Esto devuelve todos los nodos que se estén corriendo. En nuestro caso solo debería mostrar `/rosout` que es un nodo que siempre se esta ejecutando para manejar la comunicación.
+Esto devuelve todos los nodos que se estén corriendo. En nuestro caso solo debería mostrar `/rosout` que es un nodo que siempre se esta ejecutando para manejar la comunicación. (si sale error en comunicacion es porque no estas ejecutando roscore en otra terminal).
 
 Otro comando es _rosnode info_ el cual responde con la información del nodo solicitado. Esta información debe ser escrita por el desarrollador.
 
 Ejecute:
 
 ```
-
 rosnode info /rosout
-
 ```
 
 Ahora veremos como activar mas nodos manualmente, pero primero vamos a iniciar la simulación de un robot para analizar la comunicación entre nodos.
 
-Siga los siguientes pasos:
+Cierre todas las terminales y siga los siguientes pasos:
 
-1. En el ROS DE abra la pestaña _Simulations_
+1. En la carpeta capbot_ws ejecute ```catkin_make``` para compilar todos los nodos y ejecute ```source devel/setup.bash```.
 
-2. En la opcion "world" seleccione "Empty + Wall"
+2. Ejecute gazebo con ```roslaunch capbot_gazebo capbot.launch```
 
-3. En la opcion "robot" seleccione "Rosbot"
+3. Ejecute el tf_broadcaster con ```rosrun capbot_setup_tf tf_broadcaster```
 
-4. De click en "Start Simulation"
 
 La simulación puede tardar varios segundos o minutos en iniciar. Una vez cargado todo el ambiente de simulación, ejecute nuevamente `rosnode list` para ver todos los nodos que ahora se están ejecutando.
 
@@ -227,57 +222,94 @@ float32[] ranges
 float32[] intensities
 ```
 
-Estos muestra que hay varios datos de los cuales nos puede interesar que el dato `ranges` es un arreglo de datos tipo float32, este dato contiene los valores leídos por el sensor desde _angle_min_ a _angle_max aumentando_ lo indicado en _angle_increment_.
+Estos muestra que hay varios datos de los cuales nos puede interesar que el dato `ranges` que es un arreglo de datos tipo float32, este dato contiene los valores leídos por el sensor desde _angle_min_ a _angle_max_ aumentando lo indicado en _angle_increment_.
 
 Como otro ejemplo, podemos revisar la estructura del tema _/cmd_vel_, este tema es usado para enviar mensajes de movimiento al robot.
 
 ```
-
 $ rostopic type /cmd_vel
-
 ```
 
 Respuesta:
 
 ```
-
 geometry_msgs/Twist
-
 ```
 
 Ahora buscamos la estructura del mensaje:
 
 ```
-
 $ rosmsg show geometry_msgs/Twist
-
 ```
 
 Respuesta:
 
 ```
-
 geometry_msgs/Vector3 linear
-
 float64 x
-
 float64 y
-
 float64 z
-
 geometry_msgs/Vector3 angular
-
 float64 x
-
 float64 y
-
 float64 z
-
 ```
 
-Esto corresponde a un mensaje del tipo: '[x, y, z]' '[x, y, z]' donde el primer vector es la velocidad y el segundo la rotación.
+Esto corresponde a un mensaje del tipo: '[x, y, z]' '[x, y, z]' donde el primer vector es la velocidad lineal y el segundo la velocidad de rotación.
 
 
 ## Control Manual: enviando mensajes desde la terminal.
+
+el comando `rostopic pub` permite escribir un mensaje en un tema desde la terminal.
+
+La sintaxis del comando es:
+
+```
+
+rostopic pub [topic] [msg_type] [args]
+
+```
+
+Donde,
+
+- [topic] es el nombre del tema tal como aparece al usar `rostopic list`
+
+- [msg_type] es el tipo de mensaje tal como aparece al usar `rostopic type`
+
+- [args] es el contenido del mesaje que debe tener la misma estructura mostra al usar `rosmsg show`
+
+Ahora usemos este comando para mover el robot. en la terminal escribe:
+
+```
+
+rostopic pub -1 /cmd_vel geometry_msgs/Twist -- '[0.6, 0.0, 0.0]' '[0.0, 0.0, 2.0]'
+
+```
+
+El atributo `-1` indica que envía un solo mensaje y termina la comunicación.
+
+En el simulador podrá ver como el robot inicia su movimiento donde '[0.6, 0.0, 0.0]' indica una velocidad lineal en X y '[0.0, 0.0, 2.0]' una velocidad de rotación en Z. Ahora tome un tiempo para jugar un poco con el robot cambiando estos valores manualmente.
+
+## Control Manual: usar un keyboard teleop
+Una de las ventajas de ROS es poder usar nodos y paquetes que ya estan desarrollados e integrarlos facilmente en mi proyecto.
+Para este ejemplo, usaremos el node teleop_twist_keyboard que nos permite mover el robot desde el teclado del computador.
+
+Primero en una nueva terminal instalamos la libreria:
+```
+$ sudo apt-get install ros-noetic-teleop-twist-keyboard
+```
+
+A continuacion, ejecutamos el nodo
+```
+$ rosrun teleop_twist_keyboard teleop_twist_keyboard.py
+```
+
+En la terminal aparecen instrucciones de como usar las teclas para mover el robot.
+
+Esta libreria tambien se puee modificar descargando el codigo fuente desde github y cambiando por ejemplo el nombre del topic en el que se publica el mansaje de movimiento, esto resulta util si se tienen varios robots en la simulacion y cada unos "escucha" en topics diferentes.
+
+# Control automatico: crear un nodo que controle en funcion del sensor
+
+
 
 
