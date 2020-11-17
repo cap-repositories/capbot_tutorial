@@ -7,7 +7,7 @@ $ mkdir capbot_ws
 $ cd capbot_ws
 $ mkdir src
 $ catkin_make
-$ . ~/catkin_ws/devel/setup.bash
+$ . ~/capbot_ws/devel/setup.bash
 ```
 ##Preparar el Modelo del robot
 
