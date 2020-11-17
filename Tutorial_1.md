@@ -148,11 +148,11 @@ EL elemento principal del archivo urdf es el elemento robot con el unico atribut
 adicionalmente, el elemento robot puede contener elementos como los plugins de gazebo para complementar el modelo.
 
 los elementos tipo link describen los eslabones del robot, para un brazo robotico serian los eslabones que componen la cadena cinematica, para un robot movil seran las ruedas y el cuerpo del robot. Los elementos link tienen un atributo name por el que se le identifica, los subelementos que describen los link son:
-*inertial: difine las propiedades inerciales del eslabon, contiene los siguientes elementos:
+* inertial: difine las propiedades inerciales del eslabon, contiene los siguientes elementos:
 ** origin: posicion y rotacion del origen del eslabon
 ** mass: valor de la masa en kg
 ** inertia: momento de inercia con respecto al origen
-*visual: propiedades visuales del eslabon, contiene los siguientes elementos:
+* visual: propiedades visuales del eslabon, contiene los siguientes elementos:
 ** origin: origen visual del elemento
 ** geometry: describe el modelo 3D del elemento, nomalmente contiene un elementos mesh que hace referencia a un archivo STL (modelo 3D).
 ** material: propieades visuales del eslabon como el color en formato rgba
