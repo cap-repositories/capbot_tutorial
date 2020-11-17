@@ -127,7 +127,38 @@ nota: el comando source devel/setup.bash debe usarse cada que se crean nuevos pa
 Este comando abrirá gazebo cargando el entorno y el robot pero no permitira mover el robot desde ROS (todavia), de echo, no es nada diferente al archivo ***gazebo.launch*** que usamos anteriormente, pero iremos agregando mas funciones.
 
 ## Configurar el robot para ser simulado en gazebo
-El modelo del robot que es interpretado por gazebo es el archivo capbot.urdf, en este archivo se debe incluir toda la informacion y funciones (que llamaremos plugins) que permiten a gazebo interactuar con el robot para producir el movimiento o agregar sensores (simulados).
+El modelo del robot que es interpretado por gazebo es el archivo capbot.urdf, en este archivo se debera incluir toda la informacion y funciones (que llamaremos plugins) que permiten a gazebo interactuar con el robot para producir el movimiento o agregar sensores (simulados).
+
+primero entendamos que contiene un archivo de descripcion de robot tipo URDF.
+
+### Archivos URDF
+URDF es un lenguaje de representacion de robot, algo similar a una matriz DH pero con una jerarquia, propiedades fisicas y modelos 3D, es decir, permite representar la cinematica, dinamica y geometria del robot. La forma de representar toda esta informacion es por medio de un archivo XML, asi que para entender urdf se debe entender algo de xml.
+
+EL elemento principal del archivo urdf es el elemento robot con el unico atributo name, el cual contiene  pricipalmente elementos link y joint que se relacionan para formar el robot.
+```
+<robot name="robotname">
+  <link> ... </link>
+  <link> ... </link>
+  <link> ... </link>
+  <joint> .... </joint>
+  <joint> .... </joint>
+  <joint> .... </joint>
+</robot>
+```
+adicionalmente, el elemento robot puede contener elementos como los plugins de gazebo para complementar el modelo.
+
+los elementos tipo link describen los eslabones del robot, para un brazo robotico serian los eslabones que componen la cadena cinematica, para un robot movil seran las ruedas y el cuerpo del robot. Los elementos link tienen un atributo name por el que se le identifica, los subelementos que describen los link son:
+*inertial: difine las propiedades inerciales del eslabon, contiene los siguientes elementos:
+** origin: posicion y rotacion del origen del eslabon
+** mass: valor de la masa en kg
+** inertia: momento de inercia con respecto al origen
+*visual: propiedades visuales del eslabon, contiene los siguientes elementos:
+** origin: origen visual del elemento
+** geometry: describe el modelo 3D del elemento, nomalmente contiene un elementos mesh que hace referencia a un archivo STL (modelo 3D).
+** material: propieades visuales del eslabon como el color en formato rgba
+* collision: propiedades para detectar colisiones a partir del espacio ocupado por el eslabon, normalmente se copian las mismas propiedades origin y geometry de elemento visual.
+
+
 
 *colores
 *diffretential drive
