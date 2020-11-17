@@ -97,7 +97,8 @@ $ catkin_create_pkg capbot_gazebo gazebo_ros roscpp gazebo_msgs gazebo_plugins g
 Crear las carpetas estandar para el almacenamiento de los archivos de la simulacion.
 
 ```
-$ makdir launch
+$ cd capbot_gazebo
+$ mkdir launch
 $ mkdir materials
 $ mkdir models
 $ mkdir worlds
@@ -157,20 +158,241 @@ los elementos tipo link describen los eslabones del robot, para un brazo robotic
   - geometry: describe el modelo 3D del elemento, nomalmente contiene un elementos mesh que hace referencia a un archivo STL (modelo 3D).
   - material: propieades visuales del eslabon como el color en formato rgba
 * collision: propiedades para detectar colisiones a partir del espacio ocupado por el eslabon, normalmente se copian las mismas propiedades origin y geometry de elemento visual.
+```
+<link
+    name="base_link">
+    <inertial>
+      <origin
+        xyz="0.019462 0.00056937 0.12444"
+        rpy="0 0 0" />
+      <mass
+        value="8.127" />
+      <inertia
+        ixx="0.083537"
+        ixy="-9.6838E-07"
+        ixz="-5.7145E-06"
+        iyy="0.11259"
+        iyz="2.8774E-06"
+        izz="0.1919" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://capbot_description/meshes/base_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://capbot_description/meshes/base_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+```
+El elementos Joint define la articulaciones que uno dos eslabones. Este elemento tiene dos atributos:
+* name: en nombre por el que se le identifica
+* type: el tipo de articulacion que puede ser:
+- revolute: una articulación de bisagra que gira a lo largo del eje y tiene un rango limitado especificado por los límites superior e inferior.
+- continuous: una articulación en bisagra continua que gira en torno al eje y no tiene límites superior e inferior.
+- prismatic: una junta deslizante que se mueve a lo largo del eje, y tiene un rango limitado especificado por los límites superior e inferior.
+- fixed: Esto no es realmente una articulación, ya que no puede moverse. Todos los grados de libertad están bloqueados. Este tipo de unión no requiere ejes.
+- floating: Esta articulación permite el movimiento de los 6 grados de libertad.
+- planar: Esta articulación permite el movimiento en un plano perpendicular al eje.
+
+Adicionalmente, el elemento joint contiene otros elementos que describen el movimiento y jerarquia:
+* origin: posicion y rotacion de la articulacion con respecto al origin del eslabon padre
+* parent: hace referencia al eslabon que precede a la articulacion, o el eslabon al que esta vinculado. esta referencia se hace en el atributo link dando en nombre del eslabon.
+* child: hace referencia al eslabon que se movera por la articulacion. esta referencia se hace en el atributo link dando en nombre del eslabon.
+* axis: difine por medio del atributo xyz cual es el eje sobre el que se hace el movimiento.
+```
+<joint
+    name="L_joint"
+    type="continuous">
+    <origin
+      xyz="0 0.238 0"
+      rpy="1.5708 0 3.1416" />
+    <parent
+      link="base_link" />
+    <child
+      link="L_Link" />
+    <axis
+      xyz="0 0 1" />
+  </joint>
+```
+el modelo urdf del capbot fue creado de forma automatica utilizando el complemento urdf para solidworks.
+
+## gazebo plugins
+Para conectar el modelo urdf de forma dinamica con gazebo, se deben incluir los plugins de gazebo en el archivo urdf, esto es simplemente agregar otros elementos.
+
+Un listado completo de los plugins se puede encontrar en este [link](http://gazebosim.org/tutorials?tut=ros_gzplugins).
 
 
+El primer plugin que debemos agregar al modelo de nuestro robot es el ***differential_drive_controller***, el cual nos permite controlar el movimiento del capbot. lo que hace este plugin es crear dentro de gazebo un controlador para robots diferenciales (como el capbot), este controlador recibe mensajes tipo Twist y los convierte en las correspondientes velocidades de rotacion en las ruedas. Para hacer esta conversion, el plugin necesita conocer la gemetria del robot (diamtro de las ruedas, distancia entre estas), tambien conocer propiedades cinematicas y dinamica como la aceletacion y el torque de las ruedas para representar de forma realista los motores. Finalmente, el plugin requiere informacion para comunicarse con ROS como el nombre de los topics y que informacion debe publicar o no. 
 
-*colores
-*diffretential drive
-*sensor
+Todas las propiedades anteriores se agregan pegando el siguiente codigo dentro de elementos robot del archivo urdf:
+```
+<gazebo>
+  <plugin name="differential_drive_controller" filename="libgazebo_ros_diff_drive.so">
 
-#Navegacion 2D en ROS
+    <!-- Taza de actualizacion en Hz -->
+    <updateRate>20</updateRate>
+    <!-- nombre de la articulacion izquierda -->
+    <leftJoint>L_joint</leftJoint>
+    <!-- nombre de la articulacion derecha -->
+    <rightJoint>R_joint</rightJoint>
+    <!-- distancia entre las ruedas en metros -->
+    <wheelSeparation>0.486</wheelSeparation>
+    <!-- diametro de las ruedas en metros -->
+    <wheelDiameter>0.112</wheelDiameter>
+    <!-- acelaracion de las ruedas en rad/s^2-->
+    <wheelAcceleration>5.0</wheelAcceleration>
+    <!-- torque maximo producido por las ruedas en Nm -->
+    <wheelTorque>3</wheelTorque>
+    <!-- Topic en el que se recibiran los mensajes geometry_msgs/Twist  -->
+    <commandTopic>cmd_vel</commandTopic>
+    <!-- Topic en elque se publicaran los mensajes nav_msgs/Odometry que contienen la odometria -->
+    <odometryTopic>odom</odometryTopic>
+    <!-- frame de referencia para la odometria -->
+    <odometryFrame>odom</odometryFrame>
+    <!-- frame del robot desde el que se calcula la odometria -->
+    <robotBaseFrame>base_link</robotBaseFrame>
+    <!-- origen de la odometroa, 0  ENCODER, 1  WORLD -->
+    <odometrySource>world</odometrySource>
+    <publishTf>1</publishTf>
+	<publishOdomTF>true</publishOdomTF>
+    <rosDebugLevel>na</rosDebugLevel>
+    <!-- true tpara publicar los  "transforms" para las ruedas, defaults  false -->
+    <publishWheelTF>false</publishWheelTF>
+    <!-- true para publicar "transforms" para la odometria, defaults  true -->
+    <publishOdom>true</publishOdom>
+    <!-- publicar mensaje sensor_msgs/JointState en el topic /joint_states, defaults  false -->
+    <publishWheelJointState>false</publishWheelJointState>
+    <!-- Strue tpara ivnertir las ruedas, defaults true -->
+    <legacyMode>false</legacyMode>
+  </plugin>
+</gazebo>
+```
 
-El Navigation Stak es un componente de ros que permite a un robot movil ser dirigido a un obetivo de forma autonoma, evadiendo obstaculos y definiendo continuamente una trayectoria. Para usar el paquete de navegacion se debe previamente tener las siguientes funcionalidades configuradas:
+Preste atencion a la descripcion de cada elemento en los comentarios del codigo. Si algun cambio se realiza en el robot, debe actualizarse el codigo para que corresponda.
 
-*El robot debe publicar informacion de las coordendas del marco de los marcos de referencia usando mensajes de tipo ***tf***.
-*El robot debe publicar informacion del sensor Lidar o una camara de profundidad en los mensajes ***sensor_msgs/LaserScan*** o ***sensor_msgs/PointCloud*** respectivamente.
-*Un nodo debe estar publicando informacion de la odometria usando los mensaes ***tf*** y ***nav_msgs/Odometry***.
-*EL robot debe moverse al recibir mensajes de tipo ***geometry_msgs/Twist***.
+El siguiente plugin a utilizar sera el de agregar un sensor tipo Lidar (radar de luz) que le permite al robot conocer la distacia de cualquier objeto a su alrededor. para esto utilizamos el plugin ***gazebo_ros_head_rplidar_controller*** agregando el siguiente codigo dentro del elemento robot del archivo urdf.
+```
+<!-- referencia vincula el sensor al link llamado "laser" del modelo urdf -->
+<!-- se podria vincular tambien al link "base_link" pero corriendo la posicion -->
+<gazebo reference="laser">
+    <sensor type="ray" name="head_rplidar_sensor">
+      <pose>0 0 0 0 0 0</pose>
+      <visualize>false</visualize>
+      <update_rate>40</update_rate>
+      <ray>
+        <scan>
+          <horizontal>
+            <!-- numero de muestras en los 360 grados -->
+            <samples>360</samples>
+            <!-- resolucion en grados -->
+            <resolution>1</resolution>
+            <min_angle>-3.14159265</min_angle>
+            <max_angle>3.14159265</max_angle>
+          </horizontal>
+        </scan>
+        <range>
+          <!-- minima distacia desde la que empieza a medir -->
+          <min>0.3</min>
+          <!-- maxima distacia que puede medir -->
+          <max>8.0</max>
+          <!-- resolucion en metros -->
+          <resolution>0.01</resolution>
+        </range>
+        <noise>
+          <type>gaussian</type>
+          <mean>0.0</mean>
+          <stddev>0.01</stddev>
+        </noise>
+      </ray>
+      <!-- conexion al plugin -->
+      <plugin name="gazebo_ros_head_rplidar_controller" filename="libgazebo_ros_laser.so">
+        <!-- nombre del topic en el que se publicaran los mensajes sensor_msgs/LaserScan -->
+        <topicName>scan</topicName>
+        <frameName>laser</frameName>
+      </plugin>
+    </sensor>
+</gazebo>
+```
+preste atencio a los comentarios en cada linea para entender los elementos que parametrizan al plugin.
+
+**actividad: agregar nuevos plugins para cambiar el color de los eslabones**
+
+# Crear transformaciones
+Una de los puntos mas confusos de ROS son las transformaciones. Estos son mensajes de tipo tf2_msgs/TFMessage que contienen la posicion de un sistema de referencia con respecto a otro.
+
+Una descripcion detallada de las transformaciones puede encontrarse en este [tutorial](http://wiki.ros.org/tf).
+
+Para nuestro robot es necesario publicar una transformacion (broadcasting a transform) que envie constantemente informacion sobre la posicion del Lidar con respecto a la base del robot. una buena explicacion de porque se requiere esta transformacion se encuentra [aqui](http://wiki.ros.org/navigation/Tutorials/RobotSetup/TF). Un resumen y adaptacion de esa guia se presenta a continuacion:
+
+Primero navegamos en la terminal hasta la carpeta captbot_ws/src y creamos un nuevo paquete llamado ***capbot_setup_tf***.
+```
+$ catkin_create_pkg capbot_setup_tf roscpp tf geometry_msgs
+```
+Ahora vamos a crear un nodo, (hablaremos mas de la creacion de nodos en el siguiente tutorial), para esto entramos a la carpeta ***capbot_setup_tf*** que se acaba de crear y en ella creamos la carpeta ***src***.
+
+```
+$ cd capbot_setup_tf
+$ mkdir src
+```
+en la nueva carpeta ***capbot_setup_tf/src*** creamos un nuevo archivo, lo llamamos ***tf_broadcaster.cpp***, abrimos y pegamos el siguiente codigo:
+
+```
+#include <ros/ros.h>
+#include <tf/transform_broadcaster.h>
+
+//enviar la informacion de tf del robot
+int main(int argc, char** argv){
+  ros::init(argc, argv, "capbot_tf_publisher");
+  ros::NodeHandle n;
+
+  ros::Rate r(100);
+
+  tf::TransformBroadcaster broadcaster;
+  ROS_INFO("running");
+  while(n.ok()){
+  //Vector3(0.0, 0.0, 0.3) indica que el lidar esta 30 cm sobre "base_link"
+    broadcaster.sendTransform(
+      tf::StampedTransform(
+        tf::Transform(tf::Quaternion(0, 0, 0, 1), tf::Vector3(0.0, 0.0, 0.3)),
+        ros::Time::now(),"base_link", "laser"));
+    r.sleep();
+  }
+}
+```
+
+
+Para poder ejecutar este codigo desde ROS, debemos compilar usando catkin_make. Primero abrimos el archivo CMakeLists que esta en la carpeta ***capbot_setup_tf*** y agregamos lo siguiente al final de archivo y guardamos:
+```
+add_executable(tf_broadcaster src/tf_broadcaster.cpp)
+target_link_libraries(tf_broadcaster ${catkin_LIBRARIES})
+```
+Esto le indica a la funcion catkin_make que debe compilar el archivo tf_broadcaster.cpp. 
+
+Ahora ejecutamos:
+
+```
+$ cd ~/capbot_ws/
+$ catkin_make
+```
+
+Al final nos deberia aparecer el mensaje **[100%] Built target tf_broadcaster** indicando que compilo correctamente.
+
+
  
 
