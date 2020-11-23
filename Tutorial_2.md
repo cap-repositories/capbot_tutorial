@@ -389,7 +389,7 @@ La funcion catkin_install_python esta por defecto comentada en el CMakeLists, es
  $ cd ~/capbot_ws
  $ catkin_make
  $ source devel/setup.bash
- $ rosrun rospuj mydriver.py
+ $ rosrun capbot_driver mydriver.py
  ```
  Podra ver en el simulador (si todo sale bien) que el robot se mueve y gira cuando detecta algun obstaculo.
  
